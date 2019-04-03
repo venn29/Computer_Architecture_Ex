@@ -15,6 +15,84 @@ module BranchDecisionMaking(
     input wire [31:0] Operand1,Operand2,
     output reg BranchE
     );
+    wire signal={Operand1[31],Operand2[31]};
+    always@(*)
+    begin
+        case BranchTypeE:
+            `NOBRANCH:      BranchE<=0;
+            `BEQ:       
+            begin
+                if(Operand1==Operand2)
+                    BranchE<=1'b1;
+                else
+                    BranchE<=0;
+            end
+            `BNE:
+            begin
+                if(Operand1!=Operand2)
+                    BranchE<=1'b1;
+                else
+                    BranchE<=0;
+            end
+            `BLT:
+            begin
+                case signal:
+                0:  
+                begin
+                    if(Operand1<Operand2)
+                        BranchE<=1'b1;
+                    else    
+                        BranchE<=0;
+                end
+                2'b01:  BranchE<=0;
+                2'b10:  BranchE<=1'b1;
+                2'b11:
+                begin
+                    if(Operand1>Operand2)
+                        BranchE<=1'b1;
+                    else    
+                        BranchE<=0;
+                end
+                endcase
+            end
+            `BGE:
+            begin
+                case signal:
+                0:  
+                begin
+                    if(Operand1>=Operand2)
+                        BranchE<=1'b1;
+                    else    
+                        BranchE<=0;
+                end
+                2'b01:  BranchE<=1'b1;
+                2'b10:  BranchE<=0;
+                2'b11:
+                begin
+                    if(Operand1<=Operand2)
+                        BranchE<=1'b1;
+                    else    
+                        BranchE<=0;
+                end
+                endcase
+            end
+            `BLTU:
+            begin
+                if(Operand1<Operand2)
+                    BranchE<=1'b1;
+                else
+                    BranchE<=0;
+            end
+            `BGEU:
+            begin
+                if(Operand1>=Operand2)
+                    BranchE<=1'b1;
+                else
+                    BranchE<=0;
+            end
+        endcase
+    end
+
 endmodule
 
 //功能和接口说明
