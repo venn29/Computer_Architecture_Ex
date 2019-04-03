@@ -19,7 +19,11 @@ module ImmOperandUnit(
     always@(*)
     begin
         case(Type)
-            `ITYPE: Out<={ {21{In[31]}}, In[30:20] };
+            `ITYPE:     Out<={ {21{In[31]}}, In[30:20] };
+            `STYPE:     Out<={ {21{In[31]}},In[30:25],In[11:7] };
+            `SBTYPE:    Out<={ {20{In[31]}},In[7],In[30:25],In[11:8] };
+            `UTYPE:     Out<={ {13{In[31]}},In[30:12] };    
+            `UJTYPE:    Out<={ {13{In[31]}},In[19:12],In[20],In[30:21] };
             //......                                        //请补全!!!
             default:Out<=32'hxxxxxxxx;
         endcase

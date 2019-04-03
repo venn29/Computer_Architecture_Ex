@@ -52,11 +52,11 @@ module ControlUnit(
         else
         begin
             case Fn3:
-                3'b000: RegWriteD<=LB;
-                3'b001: RegWriteD<=LH;
-                3'b010: RegWriteD<=LW;
-                3'b100: RegWriteD<=LBU;
-                3'b101: RegWriteD<=LHU;
+                3'b000: RegWriteD<=`LB;
+                3'b001: RegWriteD<=`LH;
+                3'b010: RegWriteD<=`LW;
+                3'b100: RegWriteD<=`LBU;
+                3'b101: RegWriteD<=`LHU;
                 default:RegWriteD<=0;
             endcase
         end
@@ -109,16 +109,16 @@ module ControlUnit(
     always@(*)
     begin
         if(Op!=C_Branch)
-            BranchTypeD<=NOBRANCH;
+            BranchTypeD<=`NOBRANCH;
         else
         begin
             case Fn3:
-                3'b000:BranchTypeD<=BEQ;
-                3'b001:BranchTypeD<=BNE;
-                3'b100:BranchTypeD<=BLT;
-                3'b101:BranchTypeD<=BGE;
-                3'b110:BranchTypeD<=BLTU;
-                3'b111:BranchTypeD<=BGEU;
+                3'b000:BranchTypeD<=`BEQ;
+                3'b001:BranchTypeD<=`BNE;
+                3'b100:BranchTypeD<=`BLT;
+                3'b101:BranchTypeD<=`BGE;
+                3'b110:BranchTypeD<=`BLTU;
+                3'b111:BranchTypeD<=`BGEU;
                 default:BranchTypeD<=0;
             endcase
         end
@@ -127,23 +127,23 @@ module ControlUnit(
     always@(*)
     begin
         case Op:
-            C_LUI:      AluControlD<=LUI;
-            C_Branch:   AluControlD<=SUB;
+            C_LUI:      AluControlD<=`LUI;
+            C_Branch:   AluControlD<=`SUB;
             C_ICom:
             begin
                 case: Fn3
-                    3'b000:     AluControlD<=ADD;
-                    3'b010:     AluControlD<=SLT;       //有符号比较
-                    3'b011:     AluControlD<=SLTU;
-                    3'b100:     AluControlD<=XOR;
-                    3'b110:     AluControlD<=OR;
-                    3'b111:     AluControlD<=AND;
-                    3'b001:     AluControlD<=SLL;
+                    3'b000:     AluControlD<=`ADD;
+                    3'b010:     AluControlD<=`SLT;       //有符号比较
+                    3'b011:     AluControlD<=`SLTU;
+                    3'b100:     AluControlD<=`XOR;
+                    3'b110:     AluControlD<=`OR;
+                    3'b111:     AluControlD<=`AND;
+                    3'b001:     AluControlD<=`SLL;
                     3'b101:
                     begin
                         case Fn7[5] :
-                            1'b1:   AluControlD<=SRL;
-                            0:      AluControlD<=SRA;
+                            1'b1:   AluControlD<=`SRL;
+                            0:      AluControlD<=`SRA;
                         endcase
                     end
                 endcase
@@ -154,26 +154,26 @@ module ControlUnit(
                     3'b000: 
                     begin   
                         case Fn7[5] :
-                            1'b1:   AluControlD<=SUB;
-                            0:      AluControlD<=ADD;
+                            1'b1:   AluControlD<=`SUB;
+                            0:      AluControlD<=`ADD;
                         endcase
                     end
-                    3'b010:     AluControlD<=SLT;       //有符号比较
-                    3'b011:     AluControlD<=SLTU;
-                    3'b100:     AluControlD<=XOR;
-                    3'b110:     AluControlD<=OR;
-                    3'b111:     AluControlD<=AND;
-                    3'b001:     AluControlD<=SLL;
+                    3'b010:     AluControlD<=`SLT;       //有符号比较
+                    3'b011:     AluControlD<=`SLTU;
+                    3'b100:     AluControlD<=`XOR;
+                    3'b110:     AluControlD<=`OR;
+                    3'b111:     AluControlD<=`AND;
+                    3'b001:     AluControlD<=`SLL;
                     3'b101:
                     begin
                         case Fn7[5] :
-                            1'b1:   AluControlD<=SRL;
-                            0:      AluControlD<=SRA;
+                            1'b1:   AluControlD<=`SRL;
+                            0:      AluControlD<=`SRA;
                         endcase
                     end
                 endcase
             end
-            default:    AluControlD<=AND;
+            default:    AluControlD<=`AND;
         endcase      
     end
 
@@ -200,7 +200,22 @@ module ControlUnit(
     //ImmType
     always@(*)
     begin
-        
+        case Op:
+            C_LUI:      ImmType<=`UTYPE;
+            C_AUIPC:    ImmType<=`UTYPE;
+            C_Jal:      ImmType<=`UJTYPE;
+            C_Jalr:     ImmType<=`ITYPE;
+            C_Branch:   ImmType<=`SBTYPE;
+            C_Load:     ImmType<=`ITYPE;
+            C_Store:    ImmType<=`STYPE;
+            C_Icom: 
+            begin
+                if(Fn3==3'b101||Fn3==3'b001)
+                    ImmType<=`RTYPE;
+                else
+                    ImmType<=`ITYPE;
+            end
+            C_Compute:  ImmType<=`RTYPE;
     end
 
 

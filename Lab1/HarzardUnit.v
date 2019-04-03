@@ -19,11 +19,30 @@ module HarzardUnit(
     output reg [1:0] Forward1E, Forward2E
     );
     //Stall and Flush signals generate
+    always@(*)
+    begin
+        StallF<=0;
+        StallD<=0;
+        StallE<=0;
+        StallM<=0;
+        StallW<=0;
 
+        FlushF<=0;
+        FlushD<=0;
+        FlushE<=0;
+        FlushM<=0;
+        FlushW<=0;
+    end
     //Forward Register Source 1
-
+    always@(*)
+    begin
+        Forward1E<=Rs1E;
+    end
     //Forward Register Source 2
-
+    always@(*)  
+    begin
+        Forward2E<=Rs2E;
+    end
 endmodule
 
 //功能说明
