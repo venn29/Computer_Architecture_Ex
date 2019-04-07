@@ -27,10 +27,17 @@ module ControlUnit(
     output wire AluSrc1D,
     output reg [2:0] ImmType        
     );
-    parameter C_Jal=7'b110_1111,C_Jalr=7'b110_0111,C_Branch=7'b110_0011,C_Load=7'b000_0011,C_Store=7'b010_0011,C_ICom=7'b001_0011,C_Compute=011_0011,C_LUI=7'b011_0111,C_AUIPC=7'b011_0111;
+    parameter C_Jal=7'b110_1111,C_Jalr=7'b110_0111,C_Branch=7'b110_0011,C_Load=7'b000_0011,C_Store=7'b010_0011,C_ICom=7'b001_0011,C_Compute=7'b011_0011,C_LUI=7'b011_0111,C_AUIPC=7'b011_0111;
     //JalD
     reg RJalD,RJalrD,RMemToRegD,RLoadNpcD,RAluSrc1D;
     reg [1:0] RAluSrc2D;
+    assign JalD=RJalD;
+    assign JalrD=RJalrD;
+    assign MemToRegD=RMemToRegD;
+    assign LoadNpcD=RLoadNpcD;
+    assign AluSrc1D=RAluSrc1D;
+    assign AluSrc2D=RAluSrc2D;
+    //JalD
     always@(*)
     begin
         if(Op==C_Jal)
@@ -98,6 +105,7 @@ module ControlUnit(
     always@(*)
     begin
         case (Op)
+            C_Jal:      RegReadD<=0;
             C_Jalr:     RegReadD<=2'b10;
             C_Branch:   RegReadD<=2'b11;
             C_Load:     RegReadD<=2'b10;

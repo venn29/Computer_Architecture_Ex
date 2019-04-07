@@ -15,7 +15,8 @@ module BranchDecisionMaking(
     input wire [31:0] Operand1,Operand2,
     output reg BranchE
     );
-    wire signal={Operand1[31],Operand2[31]};
+    wire [1:0] signal;
+    assign signal={Operand1[31],Operand2[31]};
     always@(*)
     begin
         case (BranchTypeE)

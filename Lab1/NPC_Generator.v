@@ -23,7 +23,7 @@ module NPC_Generator(
         else if(JalD)
             PC_In<=JalTarget;
         else
-            PC_In<=PCF+2'd4;
+            PC_In<=PCF+3'b100;
     end
 endmodule
 
