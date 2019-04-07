@@ -29,20 +29,22 @@ module ControlUnit(
     );
     parameter C_Jal=7'b110_1111,C_Jalr=7'b110_0111,C_Branch=7'b110_0011,C_Load=7'b000_0011,C_Store=7'b010_0011,C_ICom=7'b001_0011,C_Compute=011_0011,C_LUI=7'b011_0111,C_AUIPC=7'b011_0111;
     //JalD
+    reg RJalD,RJalrD,RMemToRegD,RLoadNpcD,RAluSrc1D;
+    reg [1:0] RAluSrc2D;
     always@(*)
     begin
         if(Op==C_Jal)
-            JalD<=1'b1;
+            RJalD<=1'b1;
         else
-            JalD<=0;
+            RJalD<=0;
     end
     //JalrD
     always@(*)
     begin
         if(Op==C_Jalr)
-            JalrD<=1'b1;
+            RJalrD<=1'b1;
         else
-            JalrD<=0;
+            RJalrD<=0;
     end
     //RegWrite
     always@(*)
@@ -51,7 +53,7 @@ module ControlUnit(
             RegWriteD<=0;
         else
         begin
-            case Fn3:
+            case(Fn3)
                 3'b000: RegWriteD<=`LB;
                 3'b001: RegWriteD<=`LH;
                 3'b010: RegWriteD<=`LW;
@@ -65,9 +67,9 @@ module ControlUnit(
     always@(*)
     begin
         if(Op==C_Store)
-            MemToReg<=1'b1;
+            RMemToRegD<=1'b1;
         else
-            MemToRegD<=0;
+            RMemToRegD<=0;
     end
     //MemWriteD
     always@(*)
@@ -76,7 +78,7 @@ module ControlUnit(
             MemWriteD<=0;
         else
         begin
-            case Fn3:
+            case (Fn3)
                 3'b000:MemWriteD<=4'b0001;
                 3'b001:MemWriteD<=4'b0011;
                 3'b010:MemWriteD<=4'b1111;
@@ -88,14 +90,14 @@ module ControlUnit(
     always@(*)
     begin
         if(Op==C_Jal||Op==C_Jalr)
-            loadPC<=1'b1;
+           RLoadNpcD<=1'b1;
         else
-            loadPC<=0;
+           RLoadNpcD<=0;
     end
     //RegRead
     always@(*)
     begin
-        case Op:
+        case (Op)
             C_Jalr:     RegReadD<=2'b10;
             C_Branch:   RegReadD<=2'b11;
             C_Load:     RegReadD<=2'b10;
@@ -112,7 +114,7 @@ module ControlUnit(
             BranchTypeD<=`NOBRANCH;
         else
         begin
-            case Fn3:
+            case (Fn3)
                 3'b000:BranchTypeD<=`BEQ;
                 3'b001:BranchTypeD<=`BNE;
                 3'b100:BranchTypeD<=`BLT;
@@ -126,54 +128,54 @@ module ControlUnit(
     //AluControlD
     always@(*)
     begin
-        case Op:
-            C_LUI:      AluControlD<=`LUI;
-            C_Branch:   AluControlD<=`SUB;
+        case (Op)
+            C_LUI:      AluContrlD<=`LUI;
+            C_Branch:   AluContrlD<=`SUB;
             C_ICom:
             begin
-                case: Fn3
-                    3'b000:     AluControlD<=`ADD;
-                    3'b010:     AluControlD<=`SLT;       //有符号比较
-                    3'b011:     AluControlD<=`SLTU;
-                    3'b100:     AluControlD<=`XOR;
-                    3'b110:     AluControlD<=`OR;
-                    3'b111:     AluControlD<=`AND;
-                    3'b001:     AluControlD<=`SLL;
+                case (Fn3)
+                    3'b000:     AluContrlD<=`ADD;
+                    3'b010:     AluContrlD<=`SLT;       //有符号比�?
+                    3'b011:     AluContrlD<=`SLTU;
+                    3'b100:     AluContrlD<=`XOR;
+                    3'b110:     AluContrlD<=`OR;
+                    3'b111:     AluContrlD<=`AND;
+                    3'b001:     AluContrlD<=`SLL;
                     3'b101:
                     begin
-                        case Fn7[5] :
-                            1'b1:   AluControlD<=`SRL;
-                            0:      AluControlD<=`SRA;
+                        case (Fn7[5])
+                            1'b1:   AluContrlD<=`SRL;
+                            0:      AluContrlD<=`SRA;
                         endcase
                     end
                 endcase
             end
             C_Compute:
             begin
-                case: Fn3
+                case (Fn3)
                     3'b000: 
                     begin   
-                        case Fn7[5] :
-                            1'b1:   AluControlD<=`SUB;
-                            0:      AluControlD<=`ADD;
+                        case (Fn7[5])
+                            1'b1:   AluContrlD<=`SUB;
+                            0:      AluContrlD<=`ADD;
                         endcase
                     end
-                    3'b010:     AluControlD<=`SLT;       //有符号比较
-                    3'b011:     AluControlD<=`SLTU;
-                    3'b100:     AluControlD<=`XOR;
-                    3'b110:     AluControlD<=`OR;
-                    3'b111:     AluControlD<=`AND;
-                    3'b001:     AluControlD<=`SLL;
+                    3'b010:     AluContrlD<=`SLT;       //有符号比�?
+                    3'b011:     AluContrlD<=`SLTU;
+                    3'b100:     AluContrlD<=`XOR;
+                    3'b110:     AluContrlD<=`OR;
+                    3'b111:     AluContrlD<=`AND;
+                    3'b001:     AluContrlD<=`SLL;
                     3'b101:
                     begin
-                        case Fn7[5] :
-                            1'b1:   AluControlD<=`SRL;
-                            0:      AluControlD<=`SRA;
+                        case (Fn7[5])
+                            1'b1:   AluContrlD<=`SRL;
+                            0:      AluContrlD<=`SRA;
                         endcase
                     end
                 endcase
             end
-            default:    AluControlD<=`AND;
+            default:    AluContrlD<=`AND;
         endcase      
     end
 
@@ -181,34 +183,34 @@ module ControlUnit(
     always@(*)
     begin
         if(Op==C_Branch)
-            Alusrc1D<=1'b1;
+            RAluSrc1D<=1'b1;
         else
-            AluSrc1D<=0;
+            RAluSrc1D<=0;
     end
     
     //Alusrc2D
     always@(*)
     begin
         if(Op==C_ICom&&(Fn3==3'b001||Fn3==3'b101))        //移位操作
-            Alusrc2D<=2'b01;
+            RAluSrc2D<=2'b01;
         else if(Op==C_Compute||Op==C_Branch||Op==C_Store)
-            Alusrc2D<=2'b00;
+            RAluSrc2D<=2'b00;
         else
-            Alusrc2D<=0;
+            RAluSrc2D<=0;
     end
 
     //ImmType
     always@(*)
     begin
-        case Op:
+        case (Op)
             C_LUI:      ImmType<=`UTYPE;
             C_AUIPC:    ImmType<=`UTYPE;
-            C_Jal:      ImmType<=`UJTYPE;
+            C_Jal:      ImmType<=`JTYPE;
             C_Jalr:     ImmType<=`ITYPE;
-            C_Branch:   ImmType<=`SBTYPE;
+            C_Branch:   ImmType<=`BTYPE;
             C_Load:     ImmType<=`ITYPE;
             C_Store:    ImmType<=`STYPE;
-            C_Icom: 
+            C_ICom: 
             begin
                 if(Fn3==3'b101||Fn3==3'b001)
                     ImmType<=`RTYPE;
@@ -216,29 +218,30 @@ module ControlUnit(
                     ImmType<=`ITYPE;
             end
             C_Compute:  ImmType<=`RTYPE;
+            endcase
     end
 
 
 endmodule
 
 //功能说明
-    //ControlUnit       是本CPU的指令译码器，组合逻辑电路
+    //ControlUnit       是本CPU的指令译码器，组合�?�辑电路
 //输入
-    // Op               是指令的操作码部分
+    // Op               是指令的操作码部�?
     // Fn3              是指令的func3部分
     // Fn7              是指令的func7部分
 //输出
     // JalD==1          表示Jal指令到达ID译码阶段
     // JalrD==1         表示Jalr指令到达ID译码阶段
-    // RegWriteD        表示ID阶段的指令对应的 寄存器写入模式 ，所有模式定义在Parameters.v中
-    // MemToRegD==1     表示ID阶段的指令需要将data memory读取的值写入寄存器,
-    // MemWriteD        共4bit，采用独热码格式，对于data memory的32bit字按byte进行写入,MemWriteD=0001表示只写入最低1个byte，和xilinx bram的接口类似
+    // RegWriteD        表示ID阶段的指令对应的 寄存器写入模�? ，所有模式定义在Parameters.v�?
+    // MemToRegD==1     表示ID阶段的指令需要将data memory读取的�?�写入寄存器,
+    // MemWriteD        �?4bit，采用独热码格式，对于data memory�?32bit字按byte进行写入,MemWriteD=0001表示只写入最�?1个byte，和xilinx bram的接口类�?
     // LoadNpcD==1      表示将NextPC输出到ResultM
-    // RegReadD[1]==1   表示A1对应的寄存器值被使用到了，RegReadD[0]==1表示A2对应的寄存器值被使用到了，用于forward的处理
-    // BranchTypeD      表示不同的分支类型，所有类型定义在Parameters.v中
-    // AluContrlD       表示不同的ALU计算功能，所有类型定义在Parameters.v中
-    // AluSrc2D         表示Alu输入源2的选择
-    // AluSrc1D         表示Alu输入源1的选择
-    // ImmType          表示指令的立即数格式，所有类型定义在Parameters.v中   
+    // RegReadD[1]==1   表示A1对应的寄存器值被使用到了，RegReadD[0]==1表示A2对应的寄存器值被使用到了，用于forward的处�?
+    // BranchTypeD      表示不同的分支类型，�?有类型定义在Parameters.v�?
+    // AluContrlD       表示不同的ALU计算功能，所有类型定义在Parameters.v�?
+    // AluSrc2D         表示Alu输入�?2的�?�择
+    // AluSrc1D         表示Alu输入�?1的�?�择
+    // ImmType          表示指令的立即数格式，所有类型定义在Parameters.v�?   
 //实验要求  
     //实现ControlUnit模块   

@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: USTC ESLAB(Embeded System Lab）
+// Company: USTC ESLAB(Embeded System Lab�?
 // Engineer: Haojun Xia
 // Create Date: 2019/03/14 12:03:15
 // Design Name: RISCV-Pipline CPU
@@ -18,7 +18,7 @@ module BranchDecisionMaking(
     wire signal={Operand1[31],Operand2[31]};
     always@(*)
     begin
-        case BranchTypeE:
+        case (BranchTypeE)
             `NOBRANCH:      BranchE<=0;
             `BEQ:       
             begin
@@ -36,7 +36,7 @@ module BranchDecisionMaking(
             end
             `BLT:
             begin
-                case signal:
+                case (signal)
                 0:  
                 begin
                     if(Operand1<Operand2)
@@ -57,7 +57,7 @@ module BranchDecisionMaking(
             end
             `BGE:
             begin
-                case signal:
+                case (signal)
                 0:  
                 begin
                     if(Operand1>=Operand2)
@@ -95,10 +95,10 @@ module BranchDecisionMaking(
 
 endmodule
 
-//功能和接口说明
+//功能和接口说�?
     //BranchDecisionMaking接受两个操作数，根据BranchTypeE的不同，进行不同的判断，当分支应该taken时，令BranchE=1'b1
-    //BranchTypeE的类型定义在Parameters.v中
-//推荐格式：
+    //BranchTypeE的类型定义在Parameters.v�?
+//推荐格式�?
     //case()
     //    `BEQ: ???
     //      .......
