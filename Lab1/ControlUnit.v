@@ -211,8 +211,8 @@ module ControlUnit(
     always@(*)
     begin
         case (Op)
-            C_LUI:      ImmType<=`UTYPE;
-            C_AUIPC:    ImmType<=`UTYPE;
+           C_AUIPC:    ImmType<=`UTYPE; 
+           C_LUI:      ImmType<=`UTYPE;        
             C_Jal:      ImmType<=`JTYPE;
             C_Jalr:     ImmType<=`ITYPE;
             C_Branch:   ImmType<=`BTYPE;
@@ -226,6 +226,7 @@ module ControlUnit(
                     ImmType<=`ITYPE;
             end
             C_Compute:  ImmType<=`RTYPE;
+            default:;
             endcase
     end
 
