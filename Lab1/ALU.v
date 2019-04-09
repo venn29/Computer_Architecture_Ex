@@ -16,12 +16,15 @@ module ALU(
     input wire [3:0] AluContrl,
     output reg [31:0] AluOut
     );
+    wire [31:0] OP1END;      //OP1的低5位，用于SRA
+   assign  OP1END=Operand1<<(6'd32-Operand2[4:0]);
+   
     always@(*)
     begin
         case (AluContrl)
-        `SLL:   AluOut<=Operand1<<Operand2;
-        `SRL:   AluOut<=Operand1>>Operand2;
-        `SRA:   AluOut<=($signed(Operand1))>>Operand2;
+        `SLL:   AluOut<=Operand1<<Operand2[4:0];
+        `SRL:   AluOut<=Operand1>>Operand2[4:0];
+        `SRA:   AluOut=(Operand1)>>Operand2[4:0] | OP1END;
         `ADD:   AluOut<=Operand1+Operand2;              //榛樿鏃犵鍙?
         `SUB:   AluOut<=Operand1-Operand2;
         `XOR:   AluOut<=Operand1^Operand2;

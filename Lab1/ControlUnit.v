@@ -27,7 +27,7 @@ module ControlUnit(
     output wire AluSrc1D,
     output reg [2:0] ImmType        
     );
-    parameter C_Jal=7'b110_1111,C_Jalr=7'b110_0111,C_Branch=7'b110_0011,C_Load=7'b000_0011,C_Store=7'b010_0011,C_ICom=7'b001_0011,C_Compute=7'b011_0011,C_LUI=7'b011_0111,C_AUIPC=7'b011_0111;
+    parameter C_Jal=7'b110_1111,C_Jalr=7'b110_0111,C_Branch=7'b110_0011,C_Load=7'b000_0011,C_Store=7'b010_0011,C_ICom=7'b001_0011,C_Compute=7'b011_0011,C_LUI=7'b011_0111,C_AUIPC=7'b001_0111;
     //JalD
     reg RJalD,RJalrD,RMemToRegD,RLoadNpcD,RAluSrc1D;
     reg [1:0] RAluSrc2D;
@@ -56,9 +56,7 @@ module ControlUnit(
     //RegWrite
     always@(*)
     begin
-        if(Op!=C_Load)
-            RegWriteD<=0;
-        else
+        if(Op==C_Load)
         begin
             case(Fn3)
                 3'b000: RegWriteD<=`LB;
@@ -69,6 +67,10 @@ module ControlUnit(
                 default:RegWriteD<=0;
             endcase
         end
+        else if(Op==C_Jal||Op==C_Jalr||Op==C_Load||Op==C_ICom||Op==C_Compute||Op==C_AUIPC||Op==C_LUI)
+            RegWriteD<=2'b11;
+        else
+            RegWriteD<=0;
     end
     //MemToReg
     always@(*)
@@ -152,8 +154,8 @@ module ControlUnit(
                     3'b101:
                     begin
                         case (Fn7[5])
-                            1'b1:   AluContrlD<=`SRL;
-                            0:      AluContrlD<=`SRA;
+                            1'b1:   AluContrlD<=`SRA;
+                            0:      AluContrlD<=`SRL;
                         endcase
                     end
                 endcase
@@ -177,20 +179,20 @@ module ControlUnit(
                     3'b101:
                     begin
                         case (Fn7[5])
-                            1'b1:   AluContrlD<=`SRL;
-                            0:      AluContrlD<=`SRA;
+                            1'b1:   AluContrlD<=`SRA;
+                            0:      AluContrlD<=`SRL;
                         endcase
                     end
                 endcase
             end
-            default:    AluContrlD<=`AND;
+            default:    AluContrlD<=`ADD;
         endcase      
     end
 
     //Alusrc1D
     always@(*)
     begin
-        if(Op==C_Branch)
+        if(Op==C_Branch||Op==C_AUIPC)
             RAluSrc1D<=1'b1;
         else
             RAluSrc1D<=0;
@@ -204,7 +206,7 @@ module ControlUnit(
         else if(Op==C_Compute||Op==C_Branch||Op==C_Store)
             RAluSrc2D<=2'b00;
         else
-            RAluSrc2D<=0;
+            RAluSrc2D<=2'b10;
     end
 
     //ImmType
