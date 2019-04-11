@@ -55,13 +55,23 @@ module WBSegReg(
         end
 
     wire [31:0] RD_raw;
-    wire [31:0] Input_wea;
+    wire [3:0] Input_wea;
+    reg [31:0] WDin;        //ÊäÈëµÄwritedata
     assign Input_wea=WE<<A[1:0];
+    always@(*)
+    begin
+        case(A[1:0])
+        2'b00:  WDin<=WD;
+        2'b01:  WDin<=WD<<6'd8;
+        2'b10:  WDin<=WD<<6'd16;
+        2'b11:  WDin<=WD<<6'd24;
+        endcase
+    end
     DataRam DataRamInst (
         .clk    (clk),                      //è¯·è¡¥å…?
         .wea    (Input_wea),                      //è¯·è¡¥å…?
         .addra  (A[31:2]),                      //è¯·è¡¥å…?
-        .dina   (WD),                      //è¯·è¡¥å…?
+        .dina   (WDin),                      //è¯·è¡¥å…?
         .douta  ( RD_raw         ),
         .web    ( WE2            ),
         .addrb  ( A2[31:2]       ),

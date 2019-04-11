@@ -192,7 +192,7 @@ module ControlUnit(
     //Alusrc1D
     always@(*)
     begin
-        if(Op==C_Branch||Op==C_AUIPC)
+        if(Op==C_AUIPC)
             RAluSrc1D<=1'b1;
         else
             RAluSrc1D<=0;
@@ -203,7 +203,7 @@ module ControlUnit(
     begin
         if(Op==C_ICom&&(Fn3==3'b001||Fn3==3'b101))        //移位操作
             RAluSrc2D<=2'b01;
-        else if(Op==C_Compute)
+        else if(Op==C_Compute||Op==C_Branch)
             RAluSrc2D<=2'b00;
         else
             RAluSrc2D<=2'b10;

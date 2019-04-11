@@ -93,6 +93,7 @@ module testBench(
             $fclose(LoadDataRamFile);
         end
         
+        
         $display("Loading InstRam Content from file..."); 
         LoadInstRamFile = $fopen(`InstRamContentLoadPath,"r");
         if(LoadInstRamFile==0)
