@@ -203,7 +203,7 @@ module ControlUnit(
     begin
         if(Op==C_ICom&&(Fn3==3'b001||Fn3==3'b101))        //移位操作
             RAluSrc2D<=2'b01;
-        else if(Op==C_Compute||Op==C_Branch||Op==C_Store)
+        else if(Op==C_Compute)
             RAluSrc2D<=2'b00;
         else
             RAluSrc2D<=2'b10;
