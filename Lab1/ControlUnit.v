@@ -67,15 +67,15 @@ module ControlUnit(
                 default:RegWriteD<=0;
             endcase
         end
-        else if(Op==C_Jal||Op==C_Jalr||Op==C_Load||Op==C_ICom||Op==C_Compute||Op==C_AUIPC||Op==C_LUI)
-            RegWriteD<=2'b11;
+        else if(Op==C_Jal||Op==C_Jalr||Op==C_ICom||Op==C_Compute||Op==C_AUIPC||Op==C_LUI)
+            RegWriteD<=3'b111;
         else
             RegWriteD<=0;
     end
     //MemToReg
     always@(*)
     begin
-        if(Op==C_Store)
+        if(Op==C_Load)
             RMemToRegD<=1'b1;
         else
             RMemToRegD<=0;

@@ -67,14 +67,29 @@ module DataExt(
        if(RegWriteW==`LB||RegWriteW==`LH)     //������չ
          begin
             case(DuRe)
-            4'b0001:    OUT<={  {24{ OutRaw[7] }},OutRaw[7:0]  };
-            4'b0010:    OUT<={ {16{OutRaw[15]}},OutRaw[15:0] };
-            4'b0100:    OUT<={ {8{OutRaw[23]}},OutRaw[23:0] };
+            4'b0001:    OUT<={  {24{ OutRaw[7] }},OutRaw[7:0] };
+            4'b0010:    OUT<={ {24 {OutRaw[15]} } , OutRaw[15:8] };
+            4'b0100:   OUT<={ {24{OutRaw[23]}},OutRaw[23:16] };
+            4'b1000:    OUT<={ {24{OutRaw[31]}},OutRaw[31:24] };
             4'b0011:   OUT<={ {16{OutRaw[15]}},OutRaw[15:0] };
-            4'b0110:    OUT<={ {8{OutRaw[23]}},OutRaw[23:0] };
-            default:    OUT<=OutRaw;
+            4'b0110:    OUT<={ {16{OutRaw[23]}},OutRaw[23:8] };
+             4'b1110:    OUT<={ {16{OutRaw[31]}},OutRaw[31:16] };
+            default:    OUT<=OutRaw;    //1111
             endcase
          end    //if
+       else if(RegWriteW==`LBU||RegWriteW==`LHU)     //������չ
+                  begin
+                     case(DuRe)
+                     4'b0001:    OUT<={  24'b0,OutRaw[7:0] };
+                     4'b0010:    OUT<={ 24'b0,OutRaw[15:8] };
+                     4'b0100:   OUT<={ 24'b0,OutRaw[23:16] };
+                     4'b1000:    OUT<={ 24'b0,OutRaw[31:24] };
+                     4'b0011:   OUT<={ 16'b0,OutRaw[15:0] };
+                     4'b0110:    OUT<={ 16'b0,OutRaw[23:8] };
+                      4'b1110:    OUT<={ 16'b0,OutRaw[31:16] };
+                     default:    OUT<=OutRaw;    //1111
+                     endcase
+                  end    // else if
         else
             OUT<=OutRaw;
      end    //always
