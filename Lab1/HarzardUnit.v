@@ -47,7 +47,7 @@ module HarzardUnit(
      end//if
      else
      begin      //此处也有跳转的优先级,Jal优先级最低
-        if( ((RegReadE[1]&&RdM==Rs1E)||(RegReadE[0]&&RdM==Rs2E))&&(|MemToRegM))  
+        if( ((RegReadE[1]&&RdM==Rs1E)||(RegReadE[0]&&RdM==Rs2E))&&(|MemToRegM)&&RegWriteM)  
           begin
                                   FlushF<=0;
                                 FlushD<=0;
@@ -88,7 +88,7 @@ module HarzardUnit(
    //stall
    always@(*)
    begin
-    if( ((RegReadE[1]&&RdM==Rs1E)||(RegReadE[0]&&RdM==Rs2E))&&(|MemToRegM))        //需要stall的情况
+    if( ((RegReadE[1]&&RdM==Rs1E)||(RegReadE[0]&&RdM==Rs2E))&&(|MemToRegM)&&RegWriteM)        //需要stall的情况
       begin
               StallF<=1'b1;
               StallD<=1'b1;
@@ -109,9 +109,9 @@ module HarzardUnit(
     //Forward Register Source 1
    always@(*)
    begin
-        if((RegReadE[1]&&RdM==Rs1E&&RdM!=0)&&(MemToRegM==0))        //此处有优先级，MEM段优先级高于WB段，10高于01
+        if((RegReadE[1]&&RdM==Rs1E&&RdM!=0)&&(MemToRegM==0)&&RegWriteM)        //此处有优先级，MEM段优先级高于WB段，10高于01
             Forward1E=2'b10;   //MEM的forward
-        else if(RegReadE[1]&&RdW==Rs1E&&RdW!=0)
+        else if(RegReadE[1]&&RdW==Rs1E&&RdW!=0&&RegWriteW)
             Forward1E=2'b01;
          else
              Forward1E=0;
@@ -119,9 +119,9 @@ module HarzardUnit(
     //Forward Register Source 2
     always@(*)
     begin
-        if((RegReadE[0]&&RdM==Rs2E&&RdM!=0)&&(MemToRegM==0))        //此处有优先级，MEM段优先级高于WB段，10高于01
+        if((RegReadE[0]&&RdM==Rs2E&&RdM!=0)&&(MemToRegM==0)&&RegWriteM)        //此处有优先级，MEM段优先级高于WB段，10高于01
                Forward2E=2'b10;   //MEM的forward
-           else if(RegReadE[0]&&RdW==Rs2E&&RdW!=0)
+           else if(RegReadE[0]&&RdW==Rs2E&&RdW!=0&&RegWriteW)
                Forward2E=2'b01;
             else
                 Forward2E=0;
