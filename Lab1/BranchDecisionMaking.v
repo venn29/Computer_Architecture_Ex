@@ -15,7 +15,6 @@ module BranchDecisionMaking(
     input wire [31:0] Operand1,Operand2,
     output reg BranchE
     );
-    wire [1:0] signal;
     assign signal={Operand1[31],Operand2[31]};
     always@(*)
     begin
@@ -37,45 +36,17 @@ module BranchDecisionMaking(
             end
             `BLT:
             begin
-                case (signal)
-                0:  
-                begin
-                    if(Operand1<Operand2)
-                        BranchE<=1'b1;
-                    else    
-                        BranchE<=0;
-                end
-                2'b01:  BranchE<=0;
-                2'b10:  BranchE<=1'b1;
-                2'b11:
-                begin
-                    if(Operand1>Operand2)
-                        BranchE<=1'b1;
-                    else    
-                        BranchE<=0;
-                end
-                endcase
+                if(($signed(Operand1))<($signed(Operand2)))
+                    BranchE<=1'b1;
+                else
+                    BranchE<=0;
             end
             `BGE:
             begin
-                case (signal)
-                0:  
-                begin
-                    if(Operand1>=Operand2)
-                        BranchE<=1'b1;
-                    else    
-                        BranchE<=0;
-                end
-                2'b01:  BranchE<=1'b1;
-                2'b10:  BranchE<=0;
-                2'b11:
-                begin
-                    if(Operand1<=Operand2)
-                        BranchE<=1'b1;
-                    else    
-                        BranchE<=0;
-                end
-                endcase
+                if(Operand1==Operand2 ||  ($signed(Operand1))>($signed(Operand2)))
+                     BranchE<=1'b1;
+                else
+                     BranchE<=0;
             end
             `BLTU:
             begin

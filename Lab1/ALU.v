@@ -43,7 +43,7 @@ module ALU(
             else
                 AluOut<=0;
         end
-        `LUI:   AluOut<={Operand2[19:0],12'b0};       //存疑
+        `LUI:   AluOut<={Operand2[31:12],12'b0};       //存疑
         endcase
     end
 endmodule

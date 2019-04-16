@@ -14,53 +14,117 @@ module HarzardUnit(
     input wire BranchE, JalrE, JalD, 
     input wire [4:0] Rs1D, Rs2D, Rs1E, Rs2E, RdE, RdM, RdW,
     input wire [1:0] RegReadE,
-    input wire [2:0] MemToRegE, RegWriteM, RegWriteW,
+    input wire MemToRegM,
+    input wire [2:0] RegWriteM, RegWriteW,
     output reg StallF, FlushF, StallD, FlushD, StallE, FlushE, StallM, FlushM, StallW, FlushW,
     output reg [1:0] Forward1E, Forward2E
     );
     //Stall and Flush signals generate
-   
+   initial begin
+          StallF<=0;
+          StallD<=0;
+          StallE<=0;
+          StallM<=0;
+          StallW<=0;
+          FlushF<=0;
+          FlushD<=0;
+          FlushE<=0;
+          FlushM<=0;
+         FlushW<=0;
+         Forward1E=0;
+         Forward2E=0;
+    end
+    //跳转相关，只涉及flush
     always@(*)
     begin
     if(CpuRst)
     begin
-        StallF<=0;
-        StallD<=0;
-        StallE<=0;
-        StallM<=0;
-        StallW<=0;
-
-        FlushF<=1;
-        FlushD<=1;
-        FlushE<=1;
-        FlushM<=1;
-        FlushW<=1;
+        FlushF<=1'b1;
+        FlushD<=1'b1;
+        FlushE<=1'b1;
+        FlushM<=1'b1;
+        FlushW<=1'b1;
      end//if
      else
-     begin
-         StallF<=0;
-            StallD<=0;
-            StallE<=0;
-            StallM<=0;
-            StallW<=0;
-    
-            FlushF<=0;
-            FlushD<=0;
-            FlushE<=0;
-            FlushM<=0;
-            FlushW<=0;
-     end//else
+     begin      //此处也有跳转的优先级,Jal优先级最低
+        if( ((RegReadE[1]&&RdM==Rs1E)||(RegReadE[0]&&RdM==Rs2E))&&(|MemToRegM))  
+          begin
+                                  FlushF<=0;
+                                FlushD<=0;
+                                FlushE<=0;
+                                FlushM<=1'b1;
+                                FlushW<=0;
+          end
+        else if(BranchE||JalrE)
+        begin
+               FlushF<=0;
+               FlushD<=1'b1;
+               FlushE<=1'b1;
+               FlushM<=0;
+               FlushW<=0;
+        end//branchE or JalrE
      
+        
+        else if(JalD)
+        begin
+                       FlushF<=0;
+                       FlushD<=1'b1;
+                       FlushE<=0;
+                       FlushM<=0;
+                       FlushW<=0;
+        end     //JalD
+        
+        else
+        begin
+                             FlushF<=0;
+                             FlushD<=0;
+                             FlushE<=0;
+                             FlushM<=0;
+                             FlushW<=0;
+        end
+     end//else cpurst
     end//always*/
+   //数据相关，涉及stall和forward
+   //stall
+   always@(*)
+   begin
+    if( ((RegReadE[1]&&RdM==Rs1E)||(RegReadE[0]&&RdM==Rs2E))&&(|MemToRegM))        //需要stall的情况
+      begin
+              StallF<=1'b1;
+              StallD<=1'b1;
+              StallE<=1'b1;
+              StallM<=0;
+              StallW<=0;
+      end
+      else
+      begin
+                StallF<=0;
+                StallD<=0;
+                StallE<=0;
+                StallM<=0;
+                StallW<=0;
+      end
+   end
    
     //Forward Register Source 1
-   
-    initial begin
-        Forward1E<=0;
-    end
+   always@(*)
+   begin
+        if((RegReadE[1]&&RdM==Rs1E&&RdM!=0)&&(MemToRegM==0))        //此处有优先级，MEM段优先级高于WB段，10高于01
+            Forward1E=2'b10;   //MEM的forward
+        else if(RegReadE[1]&&RdW==Rs1E&&RdW!=0)
+            Forward1E=2'b01;
+         else
+             Forward1E=0;
+   end
     //Forward Register Source 2
-    initial begin
-        Forward2E<=0;
+    always@(*)
+    begin
+        if((RegReadE[0]&&RdM==Rs2E&&RdM!=0)&&(MemToRegM==0))        //此处有优先级，MEM段优先级高于WB段，10高于01
+               Forward2E=2'b10;   //MEM的forward
+           else if(RegReadE[0]&&RdW==Rs2E&&RdW!=0)
+               Forward2E=2'b01;
+            else
+                Forward2E=0;
     end
 endmodule
 

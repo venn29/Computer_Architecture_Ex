@@ -73,7 +73,7 @@ module DataExt(
             4'b1000:    OUT<={ {24{OutRaw[31]}},OutRaw[31:24] };
             4'b0011:   OUT<={ {16{OutRaw[15]}},OutRaw[15:0] };
             4'b0110:    OUT<={ {16{OutRaw[23]}},OutRaw[23:8] };
-             4'b1110:    OUT<={ {16{OutRaw[31]}},OutRaw[31:16] };
+             4'b1100:    OUT<={ {16{OutRaw[31]}},OutRaw[31:16] };
             default:    OUT<=OutRaw;    //1111
             endcase
          end    //if
@@ -86,7 +86,7 @@ module DataExt(
                      4'b1000:    OUT<={ 24'b0,OutRaw[31:24] };
                      4'b0011:   OUT<={ 16'b0,OutRaw[15:0] };
                      4'b0110:    OUT<={ 16'b0,OutRaw[23:8] };
-                      4'b1110:    OUT<={ 16'b0,OutRaw[31:16] };
+                      4'b1100:    OUT<={ 16'b0,OutRaw[31:16] };
                      default:    OUT<=OutRaw;    //1111
                      endcase
                   end    // else if

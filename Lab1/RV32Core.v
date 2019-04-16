@@ -297,7 +297,7 @@ module RV32Core(
         .Rs1E(Rs1E),
         .Rs2E(Rs2E),
         .RegReadE(RegReadE),
-        .MemToRegE(MemToRegE),
+        .MemToRegM(MemToRegM),
         .RdE(RdE),
         .RdM(RdM),
         .RegWriteM(RegWriteM),
@@ -322,6 +322,6 @@ module RV32Core(
 endmodule
 
 //功能说明
-    //RV32I 指令集CPU的顶层模块
+    //RV32I 指令集CPU的顶层模�?
 //实验要求  
     //无需修改
