@@ -21,11 +21,12 @@ localparam UNUSED_ADDR_LEN = 32 - TAG_ADDR_LEN - SET_ADDR_LEN - LINE_ADDR_LEN - 
 localparam LINE_SIZE       = 1 << LINE_ADDR_LEN  ;         // 计算 line 中 word 的数量，即 2^LINE_ADDR_LEN 个word 每 line
 localparam SET_SIZE        = 1 << SET_ADDR_LEN   ;         // 计算一共有多少组，即 2^SET_ADDR_LEN 个组
 
-reg [            31:0] cache_mem    [SET_SIZE][LINE_SIZE]; // SET_SIZE个line，每个line有LINE_SIZE个word
-reg [TAG_ADDR_LEN-1:0] cache_tags   [SET_SIZE];            // SET_SIZE个TAG
-reg                    valid        [SET_SIZE];            // SET_SIZE个valid(有效位)
-reg                    dirty        [SET_SIZE];            // SET_SIZE个dirty(脏位)
+reg [            31:0] cache_mem    [SET_SIZE][WAY_CNT][LINE_SIZE]; // SET_SIZE个line，每个line有LINE_SIZE个word
+reg [TAG_ADDR_LEN-1:0] cache_tags   [SET_SIZE][WAY_CNT];            // SET_SIZE*WAY_CNT个TAG
+reg                    valid        [SET_SIZE][WAY_CNT];            // SET_SIZE*WAY_CNT个valid(有效位)
+reg                    dirty        [SET_SIZE][WAY_CNT];            // SET_SIZE*WAY_CNT个dirty(脏位)
 
+//WAY_CNT不加入地址的计算(正因如此才需要进行多路并行比较)
 wire [              2-1 :0]   word_addr;                   // 将输入地址addr拆分成这5个部分
 wire [  LINE_ADDR_LEN-1 :0]   line_addr;
 wire [   SET_ADDR_LEN-1 :0]    set_addr;
@@ -47,44 +48,71 @@ wire mem_gnt;      // 主存响应读写的握手信号
 
 assign {unused_addr, tag_addr, set_addr, line_addr, word_addr} = addr;  // 拆分 32bit ADDR
 
+reg  [5:0] SwichOut [SET_SIZE];       //指示本组中即将被换出的路,FIFO,只需要不断循环就可以了
 reg cache_hit = 1'b0;
+reg [5:0] HIT_WAY;     //命中的是第几路
 always @ (*) begin              // 判断 输入的address 是否在 cache 中命中
-    if( valid[set_addr] && cache_tags[set_addr] == tag_addr )   // 如果 cache line有效，并且tag与输入地址中的tag相等，则命中
-        cache_hit = 1'b1;
-    else
-        cache_hit = 1'b0;
+    for(integer i;=0;i<WAY_CNT;i++)
+    begin
+        if( valid[set_addr][i] && cache_tags[set_addr][i] == tag_addr  )   // 如果 cache line有效，并且tag与输入地址中的tag相等，则命中
+        begin
+            cache_hit = 1'b1;
+            HIT_WAY=i;
+            break;
+        end
+        else
+            cache_hit = 1'b0;
+    end
 end
 
 always @ (posedge clk or posedge rst) begin     // ?? cache ???
     if(rst) begin
         cache_stat <= IDLE;
-        for(integer i=0; i<SET_SIZE; i++) begin
-            dirty[i] = 1'b0;
-            valid[i] = 1'b0;
+        for(integer i=0; i<SET_SIZE; i++) 
+        begin
+            for(integer j=0;j<WAY_CNT;j++)
+            begin
+                dirty[i][j] = 1'b0;
+                valid[i][j] = 1'b0;
+            end
         end
+
+        for(integer i=0; i<SET_SIZE; i++) 
+            SwichOut[i]=0;
+
         for(integer k=0; k<LINE_SIZE; k++)
             mem_wr_line[k] <= 0;
         mem_wr_addr <= 0;
         {mem_rd_tag_addr, mem_rd_set_addr} <= 0;
         rd_data <= 0;
-    end else begin
+    end 
+    else begin
         case(cache_stat)
         IDLE:       begin
                         if( cache_hit ) begin
                             if(rd_req) begin    // 如果cache命中，并且是读请求，
-                                rd_data <= cache_mem[set_addr][line_addr];   //则直接从cache中取出要读的数据
+                                rd_data <= cache_mem[set_addr][HIT_WAY][line_addr];   //则直接从cache中取出要读的数据
                             end else if(wr_req) begin // 如果cache命中，并且是写请求，
-                                cache_mem[set_addr][line_addr] <= wr_data;   // 则直接向cache中写入数据
-                                dirty[set_addr] <= 1'b1;                     // 写数据的同时置脏位
+                                cache_mem[set_addr][HIT_WAY][line_addr] <= wr_data;   // 则直接向cache中写入数据
+                                dirty[set_addr][HIT_WAY] <= 1'b1;                     // 写数据的同时置脏位
                             end 
                         end else begin
                             if(wr_req | rd_req) begin   // 如果 cache 未命中，并且有读写请求，则需要进行换入
-                                if( valid[set_addr] & dirty[set_addr] ) begin    // 如果 要换入的cache line 本来有效，且脏，则需要先将它换出
+                                if( valid[set_addr][SwichOut[set_addr]] & dirty[set_addr][SwichOut[set_addr]]  ) // 如果 要换入的cache line 本来有效，且脏，则需要先将它换出
+                                begin    
                                     cache_stat  <= SWAP_OUT;
-                                    mem_wr_addr <= { cache_tags[set_addr], set_addr };
-                                    mem_wr_line <= cache_mem[set_addr];
+                                    mem_wr_addr <= { cache_tags[set_addr][SwichOut[set_addr]], set_addr };
+                                    mem_wr_line <= cache_mem[set_addr][SwichOut[set_addr]];
+                                    if(SwichOut[set_addr]<SET_SIZE)
+                                        SwichOut[set_addr]=SwichOut[set_addr]+1'b1;             //循环递增每一组的SwitchOut
+                                    else
+                                        SwichOut[set_addr]=0;
                                 end else begin                                   // 反之，不需要换出，直接换入
                                     cache_stat  <= SWAP_IN;
+                                    if(SwichOut[set_addr]<SET_SIZE)
+                                        SwichOut[set_addr]=SwichOut[set_addr]+1'b1;             //循环递增每一组的SwitchOut
+                                    else
+                                        SwichOut[set_addr]=0;
                                 end
                                 {mem_rd_tag_addr, mem_rd_set_addr} <= {tag_addr, set_addr};
                             end
@@ -101,11 +129,14 @@ always @ (posedge clk or posedge rst) begin     // ?? cache ???
                         end
                     end
         SWAP_IN_OK:begin           // 上一个周期换入成功，这周期将主存读出的line写入cache，并更新tag，置高valid，置低dirty
-                        for(integer i=0; i<LINE_SIZE; i++)  cache_mem[mem_rd_set_addr][i] <= mem_rd_line[i];
-                        cache_tags[mem_rd_set_addr] <= mem_rd_tag_addr;
-                        valid     [mem_rd_set_addr] <= 1'b1;
-                        dirty     [mem_rd_set_addr] <= 1'b0;
-                        cache_stat <= IDLE;        // 回到就绪状态
+                        for(integer i=0; i<LINE_SIZE; i++) 
+                        begin
+                            cache_mem[mem_rd_set_addr][SwichOut[set_addr]][i] <= mem_rd_line[i];
+                            cache_tags[mem_rd_set_addr][SwichOut[set_addr]] <= mem_rd_tag_addr;
+                            valid     [mem_rd_set_addr][SwichOut[set_addr]] <= 1'b1;
+                            dirty     [mem_rd_set_addr][SwichOut[set_addr]] <= 1'b0;
+                            cache_stat <= IDLE;        // 回到就绪状态
+                        end 
                    end
         endcase
     end
