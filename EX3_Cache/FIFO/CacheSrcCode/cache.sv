@@ -73,13 +73,13 @@ always @ (posedge clk or posedge rst) begin     // ?? cache ???
         begin
             for(integer j=0;j<WAY_CNT;j++)
             begin
-                dirty[i][j] = 1'b0;
-                valid[i][j] = 1'b0;
+                dirty[i][j] <= 1'b0;
+                valid[i][j] <= 1'b0;
             end
         end
 
         for(integer i=0; i<SET_SIZE; i++) 
-            SwichOut[i]=0;
+            SwichOut[i]<=0;
 
         for(integer k=0; k<LINE_SIZE; k++)
             mem_wr_line[k] <= 0;
@@ -104,16 +104,10 @@ always @ (posedge clk or posedge rst) begin     // ?? cache ???
                                     cache_stat  <= SWAP_OUT;
                                     mem_wr_addr <= { cache_tags[set_addr][SwichOut[set_addr]], set_addr };
                                     mem_wr_line <= cache_mem[set_addr][SwichOut[set_addr]];
-                                    if(SwichOut[set_addr]<SET_SIZE)
-                                        SwichOut[set_addr]=SwichOut[set_addr]+1'b1;             //循环递增每一组的SwitchOut
-                                    else
-                                        SwichOut[set_addr]=0;
+                                   
                                 end else begin                                   // 反之，不�?要换出，直接换入
                                     cache_stat  <= SWAP_IN;
-                                    if(SwichOut[set_addr]<SET_SIZE)
-                                        SwichOut[set_addr]=SwichOut[set_addr]+1'b1;             //循环递增每一组的SwitchOut
-                                    else
-                                        SwichOut[set_addr]=0;
+                                    
                                 end
                                 {mem_rd_tag_addr, mem_rd_set_addr} <= {tag_addr, set_addr};
                             end
@@ -137,6 +131,10 @@ always @ (posedge clk or posedge rst) begin     // ?? cache ???
                             valid     [mem_rd_set_addr][SwichOut[set_addr]] <= 1'b1;
                             dirty     [mem_rd_set_addr][SwichOut[set_addr]] <= 1'b0;
                             cache_stat <= IDLE;        // 回到就绪状�??
+                             if(SwichOut[set_addr]<SET_SIZE)
+                                        SwichOut[set_addr]<=SwichOut[set_addr]+1'b1;             //循环递增每一组的SwitchOut
+                                    else
+                                        SwichOut[set_addr]<=0;
                         end 
                    end
         endcase
