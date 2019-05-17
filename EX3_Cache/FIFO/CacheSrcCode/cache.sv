@@ -132,9 +132,9 @@ always @ (posedge clk or posedge rst) begin     // ?? cache ???
                             dirty     [mem_rd_set_addr][SwichOut[set_addr]] <= 1'b0;
                             cache_stat <= IDLE;        // 回到就绪状�??
                              if(SwichOut[set_addr]<SET_SIZE)
-                                        SwichOut[set_addr]<=SwichOut[set_addr]+1'b1;             //循环递增每一组的SwitchOut
-                                    else
-                                        SwichOut[set_addr]<=0;
+                                SwichOut[set_addr]<=SwichOut[set_addr]+1'b1;             //循环递增每一组的SwitchOut
+                            else
+                                SwichOut[set_addr]<=0;
                         end 
                    end
         endcase
