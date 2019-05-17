@@ -1,4 +1,4 @@
-// asm file name: QuickSort.S
+// asm file name: Quicksort.S
 module InstructionRam(
     input  clk, rst,
     input  [ 3:0] wea,
