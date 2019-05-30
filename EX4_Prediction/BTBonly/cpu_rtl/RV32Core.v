@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: USTC ESLAB（Embeded System Lab�?
+// Company: USTC ESLAB（Embeded System Lab�??
 // Engineer: Haojun Xia(xhjustc@mail.ustc.edu.cn)
 // Create Date: 2019/02/08 16:29:41
 // Design Name: RISCV-Pipline CPU
@@ -82,6 +82,12 @@ module RV32Core(
     wire [1:0] Forward1E;
     wire [1:0] Forward2E;
     wire [1:0] LoadedBytesSelect;
+    //BTBwires
+    wire [1:0] BTBflush;
+    wire [1:0] PredictMiss;
+    wire [31:0] PrePC;
+    wire BTBhit;
+
     //wire values assignments
     assign {Funct7D, Rs2D, Rs1D, Funct3D, RdD, OpCodeD} = Instr;
     assign JalNPC=ImmD+PCD;
@@ -104,7 +110,11 @@ module RV32Core(
         .BranchE(BranchE),
         .JalD(JalD),
         .JalrE(JalrE),
-        .PC_In(PC_In)
+        .PC_In(PC_In),
+        .PrePC(PrePC),                //追加
+        .EXpc(PCE),
+        .BTBhit(BTBhit),
+        .PredictMiss(PredictMiss)
     );
 
     IFSegReg IFSegReg1(
@@ -316,7 +326,33 @@ module RV32Core(
         .StallW(StallW),
         .FlushW(FlushW),
         .Forward1E(Forward1E),
-        .Forward2E(Forward2E)
+        .Forward2E(Forward2E),
+        .PredictMiss(PredictMiss)                        //追加
     	);    
-    	         
+    // ---------------------------------------------
+    // Judge
+    // --------------------------------------------- 
+    Judge Judge1(
+        .rst(CPU_RST),
+        .EXpc(PCE),
+        .IDpc(PCD),
+        .BrNPC(BrNPC),
+        .BranchE(BranchE),
+        .BranchTypeE(BranchTypeE),
+        .BTBflush(BTBflush),
+        .PredictMiss(PredictMiss)
+    );
+
+    // ---------------------------------------------
+    // BTB
+    // ---------------------------------------------    
+    BTB BTB1(
+        .rst(CPU_RST),
+        .BTBflush(BTBflush),
+        .BrNPC(BrNPC),
+        .EXpc(PCE),
+        .CurrentPC(PCF),
+        .PrePC(PrePC),
+        .BTBhit(BTBhit)
+    );
 endmodule

@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: USTC ESLABï¼ˆEmbeded System Labï¼‰
+// Company: USTC ESLAB£¨Embeded System Lab£©
 // Engineer: Haojun Xia
 // Create Date: 2019/03/14 11:21:33
 // Design Name: RISCV-Pipline CPU
@@ -10,18 +10,19 @@
 // Description: Choose Next PC value
 //////////////////////////////////////////////////////////////////////////////////
 module NPC_Generator(
-    input wire [31:0] PCF,JalrTarget, BranchTarget, JalTarget,
-    input wire BranchE,JalD,JalrE,
+    input wire [31:0] PCF,JalrTarget, BranchTarget, JalTarget,PrePC,Expc,
+    input wire JalD,JalrE,BTBhit,
+    input wire [1:0] PredictMiss,           //Èç¹û´ËÊýÎª10£¬ÐèÒªÄÃBranchTarget£¬Èç¹ûÎª00£¬²»¹Ü£¬Èç¹ûÎª01£¬ÄÃpc+4
     output reg [31:0] PC_In
     );
     always @(*)
     begin
-        if(JalrE)
-            PC_In <= JalrTarget;
-        else if(BranchE)
-            PC_In <= BranchTarget;
-        else if(JalD)
-            PC_In <= JalTarget;
+        if(PredictMiss==2'b10)         //Õâ¸öÅÐ¶ÏÒªÔÚÆäËûÅÐ¶ÏÖ®Ç°£¬ÒòÎªÈç¹ûmissÁË£¬ÆäËûÏîÖÐÓÃÓÚÅÐ¶ÏµÄPCÖµ¾Í²»¿É¿¿ÁË
+            PC_In<=BranchTarget;
+        else if(PredictMiss==2'b01)
+            PC_In<=Expc+4;
+        else if(BTBhit)
+            PC_In <= PrePC;
         else
             PC_In <= PCF+4;
     end

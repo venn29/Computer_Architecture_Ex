@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 //////////////////////////////////////////////////////////////////////////////////
-// Company: USTC ESLABï¼ˆEmbeded System Labï¼‰
+// Company: USTC ESLAB£¨Embeded System Lab£©
 // Engineer: Haojun Xia & Xuan Wang
 // Create Date: 2019/02/22
 // Design Name: RISCV-Pipline CPU
@@ -11,7 +11,8 @@
 //////////////////////////////////////////////////////////////////////////////////
 module HarzardUnit(
     input wire CpuRst, ICacheMiss, DCacheMiss, 
-    input wire BranchE, JalrE, JalD, 
+    input wire [1:0] PredictMiss,
+    input wire BranchE,JalrE, JalD,                                                            //´Ë´¦Í¬ÏÂ
     input wire [4:0] Rs1D, Rs2D, Rs1E, Rs2E, RdE, RdM, RdW,
     input wire [1:0] RegReadE,
     input wire [2:0] MemToRegE, RegWriteM, RegWriteW,
@@ -25,7 +26,7 @@ module HarzardUnit(
             {StallF,FlushF,StallD,FlushD,StallE,FlushE,StallM,FlushM,StallW,FlushW} <= 10'b0101010101;
         else if(DCacheMiss | ICacheMiss)
             {StallF,FlushF,StallD,FlushD,StallE,FlushE,StallM,FlushM,StallW,FlushW} <= 10'b1010101010;
-        else if(BranchE | JalrE)
+        else if(PredictMiss!=0 | JalrE)                                                                                //ÐÞ¸ÄÁË´Ë´¦£¬½«BranchE¸Ä³ÉÁËPredictMiss
             {StallF,FlushF,StallD,FlushD,StallE,FlushE,StallM,FlushM,StallW,FlushW} <= 10'b0001010000;
         else if(MemToRegE & ((RdE==Rs1D)||(RdE==Rs2D)) )
             {StallF,FlushF,StallD,FlushD,StallE,FlushE,StallM,FlushM,StallW,FlushW} <= 10'b1010010000;
