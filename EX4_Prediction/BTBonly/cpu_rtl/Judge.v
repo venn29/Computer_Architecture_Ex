@@ -27,15 +27,12 @@ module Judge(
     input [31:0] IDpc,      //ID段寄存器的PC，用于判断预测和实际是否相符
     input [31:0] BrNPC,      //计算出来的跳转地址
     input BranchE,
-    input BranchTypeE,
+    input [2:0]BranchTypeE,
 
     output reg [1:0] BTBflush,          //10的时候，指示BTB更新设置为有效，01的时候，设空cahce，EXpc和Aluout不通过本模块传递,00表示不用改变
     output reg [1:0] PredictMiss        //同上，
     );
 
-reg [31:0] PreCache[64];        //cache的大小为64
-reg [23:0] Pretag[64];          //用于比较的tag，最低2位和次低6位不用比较
-reg valid[64];                  //有效位
 always@(*)
 begin
     if(rst)

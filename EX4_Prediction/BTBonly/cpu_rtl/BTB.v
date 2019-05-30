@@ -32,9 +32,9 @@ module BTB(
     output reg BTBhit               //BTBcache中是否命中
     );
 
-reg [31:0] PreCache[16];        //cache的大小为64
-reg [26:0] Pretag[16];          //用于比较的tag，最低2位和次低6位不用比较
-reg valid[16];                  //有效位
+reg [31:0] PreCache[0:15];        //cache的大小为64
+reg [26:0] Pretag[0:15];          //用于比较的tag，最低2位和次低6位不用比较
+reg valid[0:15];                  //有效位
 
 wire [3:0] updateAddr;
 wire [26:0] updateTag;
@@ -50,8 +50,22 @@ always@(*)
 begin
     if(rst)
     begin
-        for(integer i=0;i<16;i++)
-            valid[i]<=0;
+       valid[0]=0;
+       valid[1]=0;
+       valid[2]=0;
+       valid[3]=0;
+       valid[4]=0;
+       valid[5]=0;
+       valid[6]=0;
+       valid[7]=0;
+       valid[8]=0;
+       valid[9]=0;
+       valid[10]=0;
+       valid[11]=0;
+       valid[12]=0;
+       valid[13]=0;
+       valid[14]=0;
+       valid[15]=0;
     end     //rst
     else 
     begin

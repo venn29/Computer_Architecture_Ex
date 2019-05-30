@@ -107,12 +107,11 @@ module RV32Core(
         .JalrTarget(AluOutE), 
         .BranchTarget(BrNPC), 
         .JalTarget(JalNPC),
-        .BranchE(BranchE),
         .JalD(JalD),
         .JalrE(JalrE),
         .PC_In(PC_In),
         .PrePC(PrePC),                //追加
-        .EXpc(PCE),
+        .Expc(PCE),
         .BTBhit(BTBhit),
         .PredictMiss(PredictMiss)
     );
