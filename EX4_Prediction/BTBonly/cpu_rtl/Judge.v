@@ -30,8 +30,10 @@ module Judge(
     input [2:0]BranchTypeE,
 
     output reg [1:0] BTBflush,          //10的时候，指示BTB更新设置为有效，01的时候，设空cahce，EXpc和Aluout不通过本模块传递,00表示不用改变
-    output reg [1:0] PredictMiss        //同上，
+    output reg [1:0] PredictMiss,        //同上，
+    output reg failed
     );
+    
 
 always@(*)
 begin
@@ -39,6 +41,7 @@ begin
     begin
         BTBflush<=0;
         PredictMiss<=0;
+        failed = 1'b0;
     end
     else
     begin
@@ -48,11 +51,13 @@ begin
             begin
                 BTBflush<=0;
                 PredictMiss<=0;
+                failed<=0;
             end
             else 
             begin
                 BTBflush<=2'b10;        //
                 PredictMiss<=2'b10;
+                failed = 1'b1;
             end
         end
         else if(BranchTypeE!=0)     //实际没命中
@@ -61,17 +66,20 @@ begin
             begin
                 BTBflush<=0;
                 PredictMiss<=0;
+                failed<=0;
             end
             else
             begin
                 BTBflush<=2'b01;
                 PredictMiss<=2'b01;
+                failed = 1'b1;
             end
         end
         else        //根本不是跳转指令
         begin
             BTBflush<=0;
             PredictMiss<=0;
+            failed<=0;
         end
     end
 end

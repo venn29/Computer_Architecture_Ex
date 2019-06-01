@@ -332,7 +332,10 @@ module RV32Core(
     // ---------------------------------------------
     // BHT
     // --------------------------------------------- 
+    wire failed;
+        reg [31:0] failed_cnt = 0;
     BHT BHT1(
+        .clk(CPU_CLK),
         .rst(CPU_RST),
         .EXpc(PCE),
         .IDpc(PCD),
@@ -341,9 +344,13 @@ module RV32Core(
         .BranchTypeE(BranchTypeE),
         .BTBhit(BTBhit),
         .PredictMiss(PredictMiss),
-        .BHThit(BHThit)
+        .BHThit(BHThit),
+        .failed(failed)
     );
-
+  always @ (posedge CPU_CLK) begin
+          if(failed)
+              failed_cnt <= failed_cnt +1;
+      end
     // ---------------------------------------------
     // BTB
     // ---------------------------------------------    

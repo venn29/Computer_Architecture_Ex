@@ -22,6 +22,7 @@
 ////记得去改HazzardUnit
 
 module BTB(
+    input clk,
     input rst,                  //用于初始化
     input [1:0] BTBflush,           //在纯BTB中用于判断flush与否
     input [31:0] BrNPC,        //新的预测PC，既是跳转PC,BrNPC
@@ -45,8 +46,9 @@ assign  updateAddr = EXpc[5:2];      //4位地址，更新的映射地址
 assign  updateTag =EXpc[31:6];      //26位更新tag
 assign fetchAddr = CurrentPC[5:2];
 assign fetchTag= CurrentPC[31:6];
-
-always@(*)
+ 
+reg [7:0] miss;
+always@(posedge clk)
 begin
     if(rst)
     begin
@@ -66,6 +68,7 @@ begin
        valid[13]=0;
        valid[14]=0;
        valid[15]=0;
+       miss <=0;
     end     //rst
     else 
     begin
@@ -74,9 +77,13 @@ begin
             valid[updateAddr]<=1'b1;
             Pretag[updateAddr]<=updateTag;
             PreCache[updateAddr]<=BrNPC;
+            miss <= miss+1'b1;
         end     //update
         else if(BTBflush==2'b01)        //需要从有效变为无效
+        begin
             valid[updateAddr]=0;        
+            miss <= miss + 1'b1;
+        end
                                         //其他情况没有操作
     end     //~rst
 end

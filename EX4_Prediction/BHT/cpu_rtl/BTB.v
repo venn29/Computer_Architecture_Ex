@@ -22,6 +22,7 @@
 ////记得去改HazzardUnit
 
 module BTB(
+    input clk,
     input rst,                  //用于初始化
     input [31:0] BrNPC,        //新的预测PC，既是跳转PC,BrNPC
     input [31:0] EXpc,     //改变了预测值的PC,EXpc
@@ -45,7 +46,6 @@ assign  updateAddr = EXpc[5:2];      //4位地址，更新的映射地址
 assign  updateTag =EXpc[31:6];      //26位更新tag
 assign fetchAddr = CurrentPC[5:2];
 assign fetchTag= CurrentPC[31:6];
-
 always@(*)          //决定BTB是否flush
 begin
     if(rst)
@@ -66,7 +66,7 @@ begin
 end
 
 
-always@(*)
+always@(posedge clk)
 begin
     if(rst)
     begin

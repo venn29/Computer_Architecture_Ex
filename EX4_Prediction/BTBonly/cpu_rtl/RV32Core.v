@@ -331,6 +331,8 @@ module RV32Core(
     // ---------------------------------------------
     // Judge
     // --------------------------------------------- 
+    wire failed;
+    reg [31:0] failed_cnt = 0;
     Judge Judge1(
         .rst(CPU_RST),
         .EXpc(PCE),
@@ -339,13 +341,26 @@ module RV32Core(
         .BranchE(BranchE),
         .BranchTypeE(BranchTypeE),
         .BTBflush(BTBflush),
-        .PredictMiss(PredictMiss)
+        .PredictMiss(PredictMiss),
+        .failed(failed)
     );
+    always @ (posedge CPU_CLK) begin
+    if(CPU_RST)
+        failed_cnt<=0;
+     else
+      begin
+        if(failed)
+            failed_cnt <= failed_cnt +1;
+         else
+            failed_cnt <=failed_cnt;
+       end
+    end
 
     // ---------------------------------------------
     // BTB
     // ---------------------------------------------    
     BTB BTB1(
+        .clk(CPU_CLK),
         .rst(CPU_RST),
         .BTBflush(BTBflush),
         .BrNPC(BrNPC),
