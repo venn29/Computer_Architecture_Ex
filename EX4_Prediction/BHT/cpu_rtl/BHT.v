@@ -35,8 +35,33 @@ module BHT(
     output reg failed
     );
 parameter SN=0,WN=2'b01,WT=2'b10,ST=2'b11;      //分别是强不命中，弱不命中，弱命中，强命中
-reg [1:0] BHT_State;      //BHT状态机
-initial BHT_State=WN;
+reg [1:0] BHT_State [0:15];      //BHT状态机
+initial BHT_State[0]=WN;
+initial BHT_State[1]=WN;
+initial BHT_State[2]=WN;
+initial BHT_State[3]=WN;
+initial BHT_State[4]=WN;
+initial BHT_State[5]=WN;
+initial BHT_State[6]=WN;
+initial BHT_State[7]=WN;
+initial BHT_State[8]=WN;
+initial BHT_State[9]=WN;
+initial BHT_State[10]=WN;
+initial BHT_State[11]=WN;
+initial BHT_State[12]=WN;
+initial BHT_State[13]=WN;
+initial BHT_State[14]=WN;
+initial BHT_State[15]=WN;
+
+wire [3:0] updateAddr;
+wire [26:0] updateTag;
+wire [3:0]  fetchAddr;
+wire [26:0] fetchTag;       
+
+assign  updateAddr = EXpc[5:2];      //4位地址，更新的映射地址
+assign  updateTag =EXpc[31:6];      //26位更新tag
+
+
 reg [7:0] miss;
 always@(*)      //根据当前状态决定命中与否 
 begin
@@ -60,40 +85,40 @@ always@(posedge clk)      //根据实际跳转情况改变状态
 begin
     if (rst)
     begin
-        BHT_State<=WN;
+        BHT_State[updateAddr]<=WN;
         miss <=0;
     end
     else 
     begin
     if(BranchE)
     begin
-        case(BHT_State)
+        case(BHT_State[updateAddr])
         SN:     begin
-        BHT_State<=WN;
+       BHT_State[updateAddr]<=WN;
         miss <= miss+1'b1;
         end
         WN:    
         begin
-         BHT_State<=ST;
+        BHT_State[updateAddr]<=ST;
          miss <= miss +1'b1;
          end
-        WT:     BHT_State<=ST;
-        ST:     BHT_State<=ST;
+        WT:    BHT_State[updateAddr]<=ST;
+        ST:     BHT_State[updateAddr]<=ST;
         endcase
         end
     else
     begin
     if(BranchTypeE!=0)      //不命中
     begin
-        case(BHT_State)
-        SN:     BHT_State<=SN;
-        WN:     BHT_State<=SN;
+        case(BHT_State[updateAddr])
+        SN:     BHT_State[updateAddr]<=SN;
+        WN:     BHT_State[updateAddr]<=SN;
         WT:    begin
-         BHT_State<=SN;
+         BHT_State[updateAddr]<=SN;
          miss <=miss +1'b1;
          end
         ST:     begin
-        BHT_State<=WT;
+        BHT_State[updateAddr]<=WT;
         miss <=miss +1'b1;
         end
         endcase
